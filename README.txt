@@ -3,7 +3,7 @@
 
 
 - Darles permiso de ejecucion "chmod 777 Script.sh"
-- Ejecutar el archivo "./Script.sh"
+- Ejecutar el archivo "sudo ./Script.sh"
 
 
 - Los informenes se guardaran en una carpeta y el output
