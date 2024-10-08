@@ -300,8 +300,44 @@ else
     } >> $output_file
 fi
 
-# 14. Verificación de Antivirus Instalado
-add_section "14. Verificación de Antivirus Instalado"
+
+
+# 14. Verificacion para determinar el tipo de cifrado de las contraseñas
+# Añadir sección
+add_section "14. Tipo de Cifrado de Contraseñas"
+echo "------------------------------------------------------" >> $output_file
+echo "Verificando tipo de cifrado de contraseñas en /etc/shadow..." >> $output_file
+echo "------------------------------------------------------" >> $output_file
+
+# Leer el archivo /etc/shadow
+while IFS=: read -r user password _; do
+    if [[ -z "$password" ]]; then
+        echo "Usuario: $user, no tiene contraseña establecida." >> $output_file
+    elif [[ "$password" == "*" || "$password" == "!" ]]; then
+        echo "Usuario: $user, la cuenta está bloqueada (contraseña deshabilitada)." >> $output_file
+    elif [[ "$password" == \$y\$* ]]; then
+        echo "Usuario: $user, la contraseña está cifrada con yescrypt." >> $output_file
+    elif [[ "$password" == \$6\$* ]]; then
+        echo "Usuario: $user, la contraseña está cifrada con SHA-512." >> $output_file
+    elif [[ "$password" == \$5\$* ]]; then
+        echo "Usuario: $user, la contraseña está cifrada con SHA-256." >> $output_file
+    elif [[ "$password" == \$2y\$* ]]; then
+        echo "Usuario: $user, la contraseña está cifrada con bcrypt." >> $output_file
+    elif [[ "$password" == \$2\$* ]]; then
+        echo "Usuario: $user, la contraseña está cifrada con DES." >> $output_file
+    else
+        echo "Usuario: $user, tiene un formato de contraseña desconocido." >> $output_file
+    fi
+done < /etc/shadow
+
+
+
+
+
+
+
+# 15. Verificación de Antivirus Instalado
+add_section "15. Verificación de Antivirus Instalado"
 antivirus_list=("clamav" "sophos" "chkrootkit" "rkhunter" "bitdefender" "f-secure")
 
 found_antivirus=0
@@ -317,8 +353,8 @@ if [ $found_antivirus -eq 0 ]; then
     echo "Problema Potencial: Se recomienda instalar un software antivirus para proteger el sistema." >> $output_file
 fi
 
-# 15. Verificación de NTP
-add_section "15. Verificación de NTP"
+# 16. Verificación de NTP
+add_section "16. Verificación de NTP"
 if systemctl is-active --quiet ntp; then
     echo "El servicio NTP está activo y en funcionamiento." >> $output_file
 else
@@ -335,8 +371,8 @@ else
 fi
 
 
-#16. Verificacion del Sistema
-add_section "16. Verificación de Uso de Recursos"
+#17. Verificacion del Sistema
+add_section "17. Verificación de Uso de Recursos"
 echo "Uso de CPU:" >> $output_file
 top -b -n 1 | head -n 10 >> $output_file
 
@@ -347,10 +383,10 @@ echo "Espacio en Disco:" >> $output_file
 df -h >> $output_file
 
 
-#17-18. Vericiacion de Reglas con Iptables o NFTABLES
+#18-19. Vericiacion de Reglas con Iptables o NFTABLES
 
-#17. Verificación de Reglas de Iptables
-add_section "17. Verificación de Reglas de Iptables"
+#18. Verificación de Reglas de Iptables
+add_section "18. Verificación de Reglas de Iptables"
 iptables_rules=$(sudo iptables -L -n -v)
 if [ -n "$iptables_rules" ]; then
     {
@@ -364,8 +400,8 @@ else
     } >> $output_file
 fi
 
-#18. Verificacion de Reglas con NFTABLES
-add_section "18. Verificación de Reglas de Nftables"
+#19. Verificacion de Reglas con NFTABLES
+add_section "19. Verificación de Reglas de Nftables"
 nft_rules=$(sudo nft list ruleset)
 if [ -n "$nft_rules" ]; then
     {
